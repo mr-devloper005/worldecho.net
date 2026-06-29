@@ -8,6 +8,7 @@ import type { SitePost } from '@/lib/site-connector'
 import { EditableSiteShell } from '@/editable/shell/EditableSiteShell'
 import { EditableArticleComments } from '@/editable/components/EditableArticleComments'
 import { getTaskTheme, taskThemeStyle } from '@/editable/theme/task-themes'
+import { Ads } from '@/lib/ads'
 
 export const revalidate = 3
 
@@ -125,7 +126,13 @@ export function TaskDetailView({ task, post, related, comments = [] }: { task: T
         {task === 'profile' ? <ProfileDetail post={post} related={related} /> : null}
         {task === 'article' ? <ArticleDetail post={post} related={related} comments={comments} /> : null}
       </main>
+
+      <div className="mx-auto w-full max-w-[var(--editable-container)] px-5 py-10 sm:px-6 lg:px-8">
+        <Ads slot="header" showLabel eager className="mx-auto w-full" />
+      </div>
     </EditableSiteShell>
+
+
   )
 }
 
@@ -319,23 +326,64 @@ function ImageDetail({ post, related }: { post: SitePost; related: SitePost[] })
   )
 }
 
-// ----- Bookmark: a single curated resource -----
+// ----- Bookmark: a premium, single curated resource -----
 function BookmarkDetail({ post, related }: { post: SitePost; related: SitePost[] }) {
   const website = getField(post, ['website', 'url', 'link'])
+  const domain = website ? website.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '') : ''
+  const category = categoryOf(post, 'Resource')
+
   return (
     <>
-      <article className="mx-auto max-w-3xl px-6 py-14 sm:py-20">
-        <BackLink task="sbm" />
-        <div className="mt-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--tk-accent-soft)] text-[var(--tk-accent)]"><Bookmark className="h-7 w-7" /></div>
-        <div className="mt-6"><Kicker task="sbm">Saved resource</Kicker></div>
-        <h1 className="editable-display mt-4 text-4xl font-semibold leading-[1.05] tracking-[-0.03em] sm:text-5xl">{post.title}</h1>
-        {leadText(post) ? <p className="mt-6 text-lg leading-8 text-[var(--tk-muted)]">{leadText(post)}</p> : null}
-        {website ? (
-          <Link href={website} target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[var(--tk-accent)] px-5 py-3 text-sm font-semibold text-[var(--tk-on-accent)] transition hover:opacity-90">
-            Open resource <ExternalLink className="h-4 w-4" />
-          </Link>
-        ) : null}
+      <section className="relative overflow-hidden border-b border-[var(--tk-line)]">
+        <div className="pointer-events-none absolute inset-x-0 -top-40 h-96 bg-[radial-gradient(60%_60%_at_30%_0%,var(--tk-glow),transparent_70%)]" />
+        <div className="relative mx-auto max-w-[var(--editable-container)] px-6 py-14 sm:py-20 lg:px-8">
+          <BackLink task="sbm" />
+          <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+            <div className="min-w-0">
+              <div className="flex items-center gap-3">
+                <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--tk-accent-soft)] text-[var(--tk-accent)]"><Bookmark className="h-6 w-6" /></span>
+                <Kicker task="sbm">Saved resource</Kicker>
+              </div>
+              <h1 className="editable-display mt-6 text-4xl font-semibold leading-[1.04] tracking-[-0.03em] sm:text-5xl">{post.title}</h1>
+              {leadText(post) ? <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--tk-muted)]">{leadText(post)}</p> : null}
+              <div className="mt-7 flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--tk-line)] bg-[var(--tk-surface)] px-3.5 py-1.5 text-xs font-medium uppercase tracking-[0.14em] text-[var(--tk-muted)]"><Tag className="h-3.5 w-3.5 text-[var(--tk-accent)]" /> {category}</span>
+                {domain ? <span className="inline-flex items-center gap-2 rounded-full border border-[var(--tk-line)] bg-[var(--tk-surface)] px-3.5 py-1.5 text-xs font-medium text-[var(--tk-muted)]"><Globe2 className="h-3.5 w-3.5 text-[var(--tk-accent)]" /> {domain}</span> : null}
+              </div>
+            </div>
+
+            <aside className="lg:sticky lg:top-24 lg:self-start">
+              <div className="rounded-[var(--tk-radius)] border border-[var(--tk-line)] bg-[var(--tk-surface)] p-6 shadow-[0_28px_60px_-20px_rgba(0,0,0,0.85)]">
+                <p className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--tk-muted)]">The resource</p>
+                <p className="editable-display mt-2 text-lg font-semibold leading-snug tracking-[-0.01em]">{domain || post.title}</p>
+                {website ? (
+                  <Link href={website} target="_blank" rel="noreferrer" className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[var(--tk-accent)] px-5 py-3 text-sm font-semibold text-[var(--tk-on-accent)] transition hover:opacity-90">
+                    Open resource <ExternalLink className="h-4 w-4" />
+                  </Link>
+                ) : null}
+                <div className="mt-5 grid gap-2.5 border-t border-[var(--tk-line)] pt-5 text-sm text-[var(--tk-muted)]">
+                  <p className="inline-flex items-center gap-2"><Tag className="h-4 w-4 text-[var(--tk-accent)]" /> {category}</p>
+                  <p className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-[var(--tk-accent)]" /> Curated on {SITE_CONFIG.name}</p>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <article className="mx-auto max-w-3xl px-6 py-14 sm:py-16">
         <BodyContent post={post} />
+        {website ? (
+          <div className="mt-12 flex flex-col items-start gap-4 rounded-[var(--tk-radius)] border border-[var(--tk-line)] bg-[var(--tk-surface)] p-7 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="editable-display text-lg font-semibold tracking-[-0.01em]">Ready to dive in?</p>
+              <p className="mt-1 text-sm text-[var(--tk-muted)]">Open {domain || 'this resource'} in a new tab.</p>
+            </div>
+            <Link href={website} target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[var(--tk-accent)] px-5 py-3 text-sm font-semibold text-[var(--tk-on-accent)] transition hover:opacity-90">
+              Open resource <ExternalLink className="h-4 w-4" />
+            </Link>
+          </div>
+        ) : null}
       </article>
       <RelatedStrip task="sbm" related={related} />
     </>
@@ -383,37 +431,96 @@ function PdfDetail({ post, related }: { post: SitePost; related: SitePost[] }) {
   )
 }
 
-// ----- Profile: identity-first with a sticky portrait -----
-function ProfileDetail({ post, related }: { post: SitePost; related: SitePost[] }) {
+// ----- Profile: a premium, identity-first page.
+// Reachable by direct URL only — never linked or surfaced in the public UI, and
+// it intentionally shows no ratings and no links out to other profiles. -----
+function ProfileRow({ icon: Icon, label, value }: { icon: typeof MapPin; label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--tk-accent-soft)] text-[var(--tk-accent)]"><Icon className="h-4 w-4" /></span>
+      <div className="min-w-0">
+        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[var(--tk-muted)]">{label}</p>
+        <p className="mt-0.5 break-words text-sm font-semibold">{value}</p>
+      </div>
+    </div>
+  )
+}
+
+function ProfileDetail({ post }: { post: SitePost; related: SitePost[] }) {
   const images = getImages(post)
-  const role = getField(post, ['role', 'designation', 'company', 'location'])
+  const avatar = images[0]
+  const gallery = images.slice(1)
+  const role = getField(post, ['role', 'designation', 'company', 'title'])
+  const location = getField(post, ['location', 'city', 'address'])
   const website = getField(post, ['website', 'url'])
   const email = getField(post, ['email'])
+  const phone = getField(post, ['phone', 'mobile', 'telephone'])
+  const websiteHost = website ? website.replace(/^https?:\/\//, '').replace(/\/.*$/, '') : ''
+  const hasContact = Boolean(website || email || phone)
+
   return (
-    <>
-      <section className="mx-auto max-w-[var(--editable-container)] px-6 py-14 sm:py-20 lg:px-8">
-        <BackLink task="profile" />
-        <div className="mt-8 grid gap-10 lg:grid-cols-[360px_minmax(0,1fr)]">
-          <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-[var(--tk-radius)] border border-[var(--tk-line)] bg-[var(--tk-surface)] p-8 text-center shadow-[0_22px_60px_rgba(15,23,42,0.08)]">
-              <div className="mx-auto flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border border-[var(--tk-line)] bg-[var(--tk-raised)]">
-                {images[0] ? <img src={images[0]} alt="" className="h-full w-full object-cover" /> : <UserRound className="h-14 w-14 text-[var(--tk-muted)]" />}
-              </div>
-              <h1 className="editable-display mt-6 text-2xl font-semibold tracking-[-0.02em]">{post.title}</h1>
-              {role ? <p className="mt-2 text-xs font-medium uppercase tracking-[0.16em] text-[var(--tk-accent)]">{role}</p> : null}
-              <DetailMeta post={post} center />
-              <ContactAction website={website} email={email} bare />
-            </div>
-          </aside>
-          <article className="min-w-0">
-            <Kicker task="profile">Profile</Kicker>
-            <BodyContent post={post} />
-            <ImageStrip images={images.slice(1)} label="Gallery" />
-          </article>
+    <section className="mx-auto max-w-5xl px-6 py-14 sm:py-16 lg:px-8">
+      <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-[var(--tk-muted)] transition hover:text-[var(--tk-text)]">
+        <ArrowLeft className="h-4 w-4" /> Back to home
+      </Link>
+
+      {/* Hero card */}
+      <div className="mt-8 overflow-hidden rounded-[var(--tk-radius)] border border-[var(--tk-line)] bg-[var(--tk-surface)] shadow-[0_28px_60px_-20px_rgba(0,0,0,0.85)]">
+        <div className="relative h-40 sm:h-52">
+          {avatar ? <img src={avatar} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" /> : null}
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.15),var(--tk-surface))]" />
+          <div className="pointer-events-none absolute -right-12 -top-16 h-56 w-56 rounded-full bg-[var(--tk-accent)] opacity-20 blur-[110px]" />
         </div>
-      </section>
-      <RelatedStrip task="profile" related={related} />
-    </>
+        <div className="px-6 pb-8 sm:px-10">
+          <div className="-mt-16 flex flex-col items-start gap-5 sm:-mt-20 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-end">
+              <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-3xl border-4 border-[var(--tk-surface)] bg-[var(--tk-raised)] ring-1 ring-[var(--tk-line)] sm:h-36 sm:w-36">
+                {avatar ? <img src={avatar} alt={post.title} className="h-full w-full object-cover" /> : <UserRound className="h-14 w-14 text-[var(--tk-muted)]" />}
+              </div>
+              <div className="min-w-0 pt-2">
+                <Kicker task="profile">Profile</Kicker>
+                <h1 className="editable-display mt-3 text-3xl font-semibold leading-tight tracking-[-0.03em] sm:text-4xl">{post.title}</h1>
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-[var(--tk-muted)]">
+                  {role ? <span className="inline-flex items-center gap-1.5"><Building2 className="h-4 w-4 text-[var(--tk-accent)]" /> {role}</span> : null}
+                  {location ? <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4 text-[var(--tk-accent)]" /> {location}</span> : null}
+                  {websiteHost ? <span className="inline-flex items-center gap-1.5"><Globe2 className="h-4 w-4 text-[var(--tk-accent)]" /> {websiteHost}</span> : null}
+                </div>
+              </div>
+            </div>
+            {hasContact ? (
+              <div className="flex flex-wrap gap-2.5 pt-2">
+                {website ? <Link href={website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-[var(--tk-accent)] px-5 py-2.5 text-sm font-semibold text-[var(--tk-on-accent)] transition hover:opacity-90">Visit site <ExternalLink className="h-4 w-4" /></Link> : null}
+                {email ? <a href={`mailto:${email}`} className="inline-flex items-center gap-2 rounded-full border border-[var(--tk-line)] px-5 py-2.5 text-sm font-semibold transition hover:border-[var(--tk-accent)]"><Mail className="h-4 w-4" /> Email</a> : null}
+                {phone ? <a href={`tel:${phone}`} className="inline-flex items-center gap-2 rounded-full border border-[var(--tk-line)] px-5 py-2.5 text-sm font-semibold transition hover:border-[var(--tk-accent)]"><Phone className="h-4 w-4" /> Call</a> : null}
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      {/* About + details */}
+      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_300px]">
+        <article className="min-w-0">
+          <h2 className="editable-display text-xl font-semibold tracking-[-0.02em]">About</h2>
+          <BodyContent post={post} />
+          <ImageStrip images={gallery} label="Gallery" />
+        </article>
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          {(role || location || websiteHost || email || phone) ? (
+            <div className="rounded-[var(--tk-radius)] border border-[var(--tk-line)] bg-[var(--tk-surface)] p-6">
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--tk-muted)]">Details</p>
+              <div className="mt-5 grid gap-4">
+                {role ? <ProfileRow icon={Building2} label="Role" value={role} /> : null}
+                {location ? <ProfileRow icon={MapPin} label="Location" value={location} /> : null}
+                {websiteHost ? <ProfileRow icon={Globe2} label="Website" value={websiteHost} /> : null}
+                {email ? <ProfileRow icon={Mail} label="Email" value={email} /> : null}
+                {phone ? <ProfileRow icon={Phone} label="Phone" value={phone} /> : null}
+              </div>
+            </div>
+          ) : null}
+        </aside>
+      </div>
+    </section>
   )
 }
 
@@ -494,7 +601,7 @@ function BadgeLine({ label, value }: { label: string; value: string }) {
   )
 }
 
-function RelatedPanel({ task, post, related }: { task: TaskKey; post: SitePost; related: SitePost[] }) {
+function RelatedPanel({ task, related }: { task: TaskKey; post: SitePost; related: SitePost[] }) {
   const taskConfig = getTaskConfig(task)
   return (
     <div className="space-y-6">
@@ -545,6 +652,19 @@ function RelatedCard({ task, post, grid = false }: { task: TaskKey; post: SitePo
   // task isn't in the enabled taskViews map, which 404s.
   const href = `${getTaskConfig(task)?.route || `/${task}`}/${post.slug}`
   if (grid) {
+    // Bookmarks are an image-free, text-led surface.
+    if (task === 'sbm') {
+      const website = getField(post, ['website', 'url', 'link'])
+      const domain = website ? website.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/.*$/, '') : ''
+      return (
+        <Link href={href} className="group flex h-full flex-col rounded-[var(--tk-radius)] border border-[var(--tk-line)] bg-[var(--tk-surface)] p-6 transition duration-300 hover:-translate-y-1 hover:border-[var(--tk-accent)]/40">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--tk-accent-soft)] text-[var(--tk-accent)]"><Bookmark className="h-5 w-5" /></span>
+          <h3 className="editable-display mt-5 line-clamp-2 text-base font-semibold leading-snug tracking-[-0.01em]">{post.title}</h3>
+          <p className="mt-2 line-clamp-2 flex-1 text-sm leading-6 text-[var(--tk-muted)]">{stripHtml(summaryText(post))}</p>
+          {domain ? <p className="mt-3 inline-flex items-center gap-1.5 truncate text-xs font-medium text-[var(--tk-accent)]"><Globe2 className="h-3.5 w-3.5" /> {domain}</p> : null}
+        </Link>
+      )
+    }
     return (
       <Link href={href} className="group block overflow-hidden rounded-[var(--tk-radius)] border border-[var(--tk-line)] bg-[var(--tk-surface)] transition duration-300 hover:-translate-y-1">
         <div className="aspect-[16/10] overflow-hidden bg-[var(--tk-raised)]">
